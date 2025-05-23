@@ -4,6 +4,16 @@ import psycopg2
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_db_connection():
+    return psycopg2.connect(DATABASE_URL)
+
+def scrape_and_save_reviews(username):
+    url = f"https://letterboxd.com/{username}/films/reviews/"
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
 def fetch_reviews(movie_name):
     search_term = movie_name.lower().replace(" ", "-")
     url = f"https://letterboxd.com/film/{search_term}/"
@@ -15,16 +25,6 @@ def fetch_reviews(movie_name):
     review_elements = soup.select(".review .body")
     reviews = [review.get_text(strip=True) for review in review_elements if review.get_text(strip=True)]
     return reviews[:5]
-
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-def get_db_connection():
-    return psycopg2.connect(DATABASE_URL)
-
-def scrape_and_save_reviews(username):
-    url = f"https://letterboxd.com/{username}/films/reviews/"
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
 
 reviews = []
 
