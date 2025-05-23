@@ -1,5 +1,6 @@
 import os
 import discord
+import psycopg2
 from discord.ext import commands
 from my_scraper import fetch_reviews
 from db import store_reviews, get_cached_reviews
@@ -10,6 +11,25 @@ intents.message_content = True
 
 load_dotenv()
 bot = discord.Bot(command_prefix="!", intents=intents)
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+def get_db_connection():
+    conn = psycopg2.connect(DATABASE_URL)
+    return conn
+
+def insert_review(reviewer, movie_title, review_text, review_date):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute(
+        """
+        INSERT INTO reviews (reviewer, movie_title, review_text, review_date)
+        VALUES (%s, %s, %s, %s);
+        """,
+        (reviewer, movie_title, review_text, review_date)
+    )
+    conn.commit()
+    cur.close()
+    conn.close()
 
 @bot.command()
 async def review(ctx, *, movie_name: str):
@@ -29,6 +49,15 @@ async def on_ready():
 @bot.command()
 async def ping(ctx):
     await ctx.send("Pong!")
+
+@bot.command(name="syncreviews")
+async def sync_reviews(ctx, username: str):
+    await ctx.send(f"🔄 Syncing reviews for `{username}` from Letterboxd...")
+    try:
+        count = scrape_and_save_reviews(username)
+        await ctx.send(f"✅ Synced {count} reviews from `{username}`.")
+    except Exception as e:
+        await ctx.send(f"❌ Error syncing reviews: {e}")
 
 @bot.slash_command(description="Adds user to reviewer list")
 async def addreviewer(ctx, user: discord.User):

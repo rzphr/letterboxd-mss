@@ -3,3 +3,4 @@ beautifulsoup4
 sqlalchemy
 python-dotenv
 py-cord>=2.4.1
+asyncpg
