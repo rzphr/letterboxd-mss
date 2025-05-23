@@ -24,7 +24,7 @@ async def review(ctx, *, movie_name: str):
 
 @bot.event
 async def on_ready():
-    print(f"✅ Bot is ready. Logged in as {bot.user}"
+    print(f"✅ Bot is ready. Logged in as {bot.user}")
 
 @bot.command()
 async def ping(ctx):
