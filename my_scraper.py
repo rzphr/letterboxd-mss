@@ -4,6 +4,7 @@ import psycopg2
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
+load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 def get_db_connection():
@@ -14,19 +15,7 @@ def scrape_and_save_reviews(username):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, 'html.parser')
 
-def fetch_reviews(movie_name):
-    search_term = movie_name.lower().replace(" ", "-")
-    url = f"https://letterboxd.com/film/{search_term}/"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    response = requests.get(url, headers=headers)
-    if response.status_code != 200:
-        return []
-    soup = BeautifulSoup(response.text, "html.parser")
-    review_elements = soup.select(".review .body")
-    reviews = [review.get_text(strip=True) for review in review_elements if review.get_text(strip=True)]
-    return reviews[:5]
-
-reviews = []
+    reviews = []
 
     for review_block in soup.select('.film-detail-content'):
         movie_title_tag = review_block.select_one('.headline-3')
@@ -57,3 +46,15 @@ reviews = []
     conn.close()
 
     return len(reviews)
+
+def fetch_reviews(movie_name):
+    search_term = movie_name.lower().replace(" ", "-")
+    url = f"https://letterboxd.com/film/{search_term}/"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return []
+    soup = BeautifulSoup(response.text, "html.parser")
+    review_elements = soup.select(".review .body")
+    reviews = [review.get_text(strip=True) for review in review_elements if review.get_text(strip=True)]
+    return reviews[:5]
